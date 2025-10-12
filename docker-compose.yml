@@ -1,0 +1,31 @@
+services:
+  db:
+    image: postgres:16
+    container_name: meeting_postgres
+    environment:
+      POSTGRES_USER: user1
+      POSTGRES_PASSWORD: password123   
+      POSTGRES_DB: meeting_db
+      TZ: "Asia/Ho_Chi_Minh"
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/a/postgresql/data
+
+  backend:
+    build: .
+    container_name: meeting_backend
+    environment:
+      FLASK_APP: app:create_app
+      FLASK_ENV: development
+      DATABASE_URL: postgresql://user1:password123@db:5432/meeting_db
+       # PGPASSWORD='password123' psql -h 127.0.0.1 -p 5432 -U user1 -d meeting_db
+    depends_on:
+      - db
+    ports:
+      - "5000:5000"
+    volumes:
+      - .:/app
+
+volumes:
+  postgres_data:
