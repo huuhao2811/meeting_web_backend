@@ -1,11 +1,9 @@
-# routes/messages.py
 from flask import Blueprint, request, jsonify
 from extensions import db
 from models import Message
 
 messages_bp = Blueprint("messages", __name__)
 
-# Lấy tất cả messages
 @messages_bp.route("/", methods=["GET"])
 def get_messages():
     messages = Message.query.all()
@@ -20,7 +18,6 @@ def get_messages():
         })
     return jsonify(result)
 
-# Tạo message mới
 @messages_bp.route("/", methods=["POST"])
 def create_message():
     data = request.json
@@ -33,7 +30,6 @@ def create_message():
     db.session.commit()
     return jsonify({"message": "Message sent", "id": new_msg.id})
 
-# Lấy message theo id
 @messages_bp.route("/<int:msg_id>", methods=["GET"])
 def get_message(msg_id):
     msg = Message.query.get_or_404(msg_id)

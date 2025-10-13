@@ -1,11 +1,9 @@
-# routes/meeting_participants.py
 from flask import Blueprint, request, jsonify
 from extensions import db
 from models import MeetingParticipant
 
 participants_bp = Blueprint("participants", __name__)
 
-# Lấy tất cả participants
 @participants_bp.route("/", methods=["GET"])
 def get_participants():
     participants = MeetingParticipant.query.all()
@@ -20,7 +18,6 @@ def get_participants():
         })
     return jsonify(result)
 
-# Thêm participant
 @participants_bp.route("/", methods=["POST"])
 def add_participant():
     data = request.json
@@ -34,7 +31,6 @@ def add_participant():
     db.session.commit()
     return jsonify({"message": "Participant added", "id": new_p.id})
 
-# Lấy participant theo id
 @participants_bp.route("/<int:p_id>", methods=["GET"])
 def get_participant(p_id):
     p = MeetingParticipant.query.get_or_404(p_id)
