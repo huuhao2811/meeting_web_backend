@@ -1,7 +1,7 @@
 # routes/meetings.py
 from flask import Blueprint, request, jsonify
 from extensions import db
-from models import Meeting
+from models import Meeting, MeetingParticipant
 import uuid
 from datetime import datetime
 meetings_bp = Blueprint("meetings", __name__)
@@ -25,23 +25,32 @@ def get_meetings():
 def create_meeting():
     data = request.json
     meeting_code = str(uuid.uuid4())[:8]
-    print(data)
-    print(meeting_code)
+
     if not data.get("host_id"):
-        return jsonify({"error": "Missing host_id or meeting_code"}), 400
+        return jsonify({"error": "Missing host_id"}), 400
 
     if Meeting.query.filter_by(meeting_code=meeting_code).first():
         return jsonify({"error": "Meeting code already exists"}), 400
+
     new_meeting = Meeting(
         host_id=data.get("host_id"),
-        title=data.get("title"),
+        title=data.get("title") or "New Meeting",
         meeting_code=meeting_code,
-        status=data.get("status", "scheduled"),
+        status=data.get("status", "ongoing"),
         scheduled_at=data.get("scheduled_at"),
         created_at=datetime.utcnow()
     )
     db.session.add(new_meeting)
     db.session.commit()
+
+    host_participant = MeetingParticipant(
+        meeting_id=new_meeting.id,
+        user_id=data.get("host_id"),
+        joined_at=datetime.utcnow()
+    )
+    db.session.add(host_participant)
+    db.session.commit()
+
     return jsonify({
         "message": "Meeting created",
         "meeting": {

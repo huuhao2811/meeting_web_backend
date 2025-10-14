@@ -1,42 +1,18 @@
 from flask import Blueprint, request, jsonify
 from extensions import db
-from models import Message
+from models import Message, Meeting
 
 messages_bp = Blueprint("messages", __name__)
 
-@messages_bp.route("/", methods=["GET"])
-def get_messages():
-    messages = Message.query.all()
-    result = []
-    for m in messages:
-        result.append({
-            "id": m.id,
-            "meeting_id": m.meeting_id,
-            "user_id": m.user_id,
-            "content": m.content,
-            "send_at": m.send_at
-        })
-    return jsonify(result)
-
-@messages_bp.route("/", methods=["POST"])
-def create_message():
-    data = request.json
-    new_msg = Message(
-        meeting_id=data.get("meeting_id"),
-        user_id=data.get("user_id"),
-        content=data.get("content")
-    )
-    db.session.add(new_msg)
-    db.session.commit()
-    return jsonify({"message": "Message sent", "id": new_msg.id})
-
-@messages_bp.route("/<int:msg_id>", methods=["GET"])
-def get_message(msg_id):
-    msg = Message.query.get_or_404(msg_id)
-    return jsonify({
-        "id": msg.id,
-        "meeting_id": msg.meeting_id,
-        "user_id": msg.user_id,
-        "content": msg.content,
-        "send_at": msg.send_at
-    })
+@messages_bp.route("/history/<meeting_code>", methods=["GET"])
+def get_message_history(meeting_code):
+    messages = Message.query.join(Meeting).filter(Meeting.meeting_code == meeting_code).order_by(Message.send_at.asc()).all()
+    return jsonify([
+        {
+            "user_id": message.user_id,
+            "username": message.user.username,
+            "content": message.content,
+            "send_at": message.send_at.isoformat()
+        }
+        for message in messages
+    ])

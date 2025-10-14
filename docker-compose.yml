@@ -19,7 +19,7 @@ services:
       FLASK_APP: app:create_app
       FLASK_ENV: development
       DATABASE_URL: postgresql://user1:password123@db:5432/meeting_db
-       # PGPASSWORD='password123' psql -h 127.0.0.1 -p 5432 -U user1 -d meeting_db
+      # PGPASSWORD='password123' psql -h 127.0.0.1 -p 5432 -U user1 -d meeting_db
     depends_on:
       - db
     ports:
