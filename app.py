@@ -26,4 +26,6 @@ if __name__ == "__main__":
     app = create_app()
     from sockets.socket_events import * 
     from sockets.chat_events import *
+    from sockets.micro_events import *
+    from sockets.camera_events import *
     socketio.run(app, debug=True, host="0.0.0.0", port=5001)

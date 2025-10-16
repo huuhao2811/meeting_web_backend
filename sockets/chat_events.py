@@ -27,10 +27,26 @@ def handle_send_message(data):
             "user_id": user_id,
             "username": username,
             "content": content,
-            "send_at": new_message.send_at.isoformat()
+            "send_at": new_message.send_at.replace(microsecond=0).isoformat() + "Z"  
         }, room=meeting_code)
 
     except SQLAlchemyError as e:
         db.session.rollback()
         emit("error", {"message": "Failed to send message."})
         print(f"[Error] send_message: {str(e)}")
+
+@socketio.on("load_messages")
+def handle_load_messages(data):
+    meeting_id = data.get("meeting_id")
+    messages = Message.query.filter_by(meeting_id=meeting_id).order_by(Message.send_at).all()
+    message_list = [
+        {
+            "id": m.id,
+            "user_id": m.user_id,
+            "username": m.user.username if m.user else "Unknown",
+            "content": m.content,
+            "send_at": m.send_at.isoformat() + "Z"  
+        }
+        for m in messages
+    ]
+    emit("load_messages_response", message_list)
